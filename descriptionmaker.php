@@ -6,6 +6,7 @@ chdir($scriptpath);
 //die("\n".$filepath."\n");
 require_once 'tvdb.php';
 require_once'mediainfo.php';
+require_once 'functions_description.php';
 $tvdb=new tvdb;
 
 if(isset($path))

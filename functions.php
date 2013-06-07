@@ -1,15 +1,15 @@
 <?php
-require_once $scriptpath.'imgur.php';
-require_once $scriptpath.'postget.php';
-require_once $scriptpath.'config.php';
-require_once $scriptpath.'ftp.php';
+require_once 'imgur.php';
+require_once 'postget.php';
+require_once 'config.php';
+require_once 'ftp.php';
+
 function snapshots($file,$times=array(65,300,600,1000))
 {
-	global $scriptpath;
 	$snapshots=array();
 	foreach ($times as $time)
 	{
-		if(!file_exists($snapshotfile=$scriptpath."snapshots/snapshot_".basename($file)."_$time.png"))
+		if(!file_exists($snapshotfile="snapshots/snapshot_".basename($file)."_$time.png"))
 		{
 			shell_exec($cmd="mplayer -quiet -ss $time -vo png:z=9 -ao null -zoom -frames 1 \"$file\" >/dev/null 2>&1");	
 			//die($cmd);
@@ -58,19 +58,7 @@ $postdata=array(
 	
 	return post("$site_url/takeupload.php",$postdata,'cookies.txt',$site_url."/upload.php");
 }
-function sendupload($postdata) //Send opplastingen til siden
-{
-	global $site_url;
 
-/*$postdata=array(                       
-                       'file' => '@'.$torrent,
-                       'filetype' => "2",
-                       'name' => $release,);*/
-
-	print_r($postdata);
-	$postdata['anonym']="yes";
-	return post("$site_url/takeupload.php",$postdata,'cookies.txt',$site_url."/upload.php");
-}
 
 function serieinfo($release) //Henter serie og episodeinfo fra releasenavn
 {
@@ -85,40 +73,4 @@ function serieinfo($release) //Henter serie og episodeinfo fra releasenavn
 		$serieinfo=false;
 	return $serieinfo; //1=serienavn, 2=sesong
 }
-
-function upload($release,$description,$torrent)
-{
-	
-		$parameters['scene']='no';
-		$parameters['main_cat']=2;
-		$parameters['sub1_cat']=9;
-		$parameters['sub3_cat']=29; //37=e-bøker
-		$parameters['sub2_cat']=20;
-		
-
-	return sendupload_temp($release,$description,$torrent,$parameters);
-
-}
-function uploadhandler($upload,$release)
-{
-	global $site_url,$torrent_auto_dir,$ftp_host,$ftp_user,$ftp_password;
-	//Håndter feilet opplasting
-	if(preg_match('^Mislykket opplasting.*\<p\>(.*)\</p\>^sU',$upload,$result))
-		die('Feil: '.$result[1]);
-	elseif(strpos($upload,'En torrent med lignende innhold')!==false)
-		die("Allerede lastet opp\n");
-	else
-	{
-		preg_match('^(download\.php\?id=[0-9]+)\"^',$upload,$file); //Finn torrentfilnavnet
-		echo "Laster ned torrent\n";
-		
-		file_put_contents("/tmp/$release.torrent",get($site_url."/".$file[1],'cookies.txt',$site_url."/uploaded.php")); //Last ned torrent
-		echo "Laster opp torrent til seedbox\n";
-		ftp_upload_torrent("/tmp/$release.torrent",$ftp_host,$ftp_user,$ftp_password);
-		copy("/tmp/$release.torrent","$torrent_auto_dir/$release.torrent");
-		unlink("/tmp/$release.torrent");
-	}
-	file_put_contents("upload_$release.txt",$upload);	
-}
-
 ?>

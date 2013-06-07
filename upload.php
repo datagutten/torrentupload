@@ -1,9 +1,13 @@
 <?Php
+chdir(dirname(realpath(__FILE__))); //Bytt til mappen scriptet ligger i så relative filbaner blir riktige
 require_once 'config.php';
 require_once 'functions.php';
 require_once 'ftp.php';
 require_once 'dependcheck.php';
 depend('buildtorrent');
+require 'functions_upload.php';
+$upload=new upload;
+
 
 if(isset($argv[1]))
 	$path=$argv[1];
@@ -30,21 +34,8 @@ if (!file_exists("$torrent_file_dir/$release.torrent"))
 	die("Oppretting av torrent feilet\n$cmd\n");
 
 echo "Laster opp torrent\n";
-$upload=upload($release,$description,"$torrent_file_dir/$release.torrent");
-
-//Håndter feilet opplasting
-if(preg_match('^Mislykket opplasting.*\<p\>(.*)\</p\>^sU',$upload,$result))
-	die('Feil: '.$result[1]);
-else
-{
-	preg_match('^(download\.php.*\.torrent)\"^',$upload,$file); //Finn torrentfilnavnet
-	echo "Laster ned torrent\n";
-	file_put_contents("$torrent_auto_dir/$release.torrent",get($site_url."/".$file[1],'cookies.txt',$site_url."/uploaded.php")); //Last ned torrent
-	//echo "Laster opp torrent til seedbox\n";
-	//ftp_upload_torrent("$torrent_auto_dir/$release.torrent",$ftp_host,$ftp_user,$ftp_password));
-
-}
-
-//file_put_contents("upload_$release.txt",$upload);
+$upload_return=upload($release,$description,"$torrent_file_dir/$release.torrent");
+$upload->uploadhandler($upload_return,$release);
+//file_put_contents("upload_$release.txt",$upload_return);
 
 echo "\n";
