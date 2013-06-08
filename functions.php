@@ -4,26 +4,7 @@ require_once 'postget.php';
 require_once 'config.php';
 require_once 'ftp.php';
 
-function snapshots($file,$times=array(65,300,600,1000))
-{
-	$snapshots=array();
-	foreach ($times as $time)
-	{
-		if(!file_exists($snapshotfile="snapshots/snapshot_".basename($file)."_$time.png"))
-		{
-			shell_exec($cmd="mplayer -quiet -ss $time -vo png:z=9 -ao null -zoom -frames 1 \"$file\" >/dev/null 2>&1");	
-			//die($cmd);
-			if(file_exists('00000001.png'))
-				rename('00000001.png',$snapshots[]=$snapshotfile);
-		}
-		else
-			$snapshots[]=$snapshotfile;
-		
-	}
-	if(!isset($snapshots))
-		$snapshots=false;
-return $snapshots; //Returnerer et array med bildenes filnavn
-}
+
 function description($screenshotdata,$bannerdata,$description)
 {
 	if(is_array($bannerdata)) //Hvis bannerdata er et array er bilde funnet på tvdb. 

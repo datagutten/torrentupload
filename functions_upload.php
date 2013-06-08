@@ -18,6 +18,7 @@ class upload
 		$this->site_url=$site_url;
 		$this->torrent_file_dir=$torrent_file_dir;
 		$this->torrent_auto_dir=$torrent_auto_dir;;
+		
 	}
 	function ftp_upload_torrent($torrent)
 	{

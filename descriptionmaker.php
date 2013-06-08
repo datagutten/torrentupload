@@ -8,6 +8,7 @@ require_once 'tvdb.php';
 require_once'mediainfo.php';
 require_once 'functions_description.php';
 $tvdb=new tvdb;
+$desc=new description;
 
 if(isset($path))
 	$include=true;
@@ -35,7 +36,7 @@ $release = $info['filename']; //Finn navnet på release utifra path
 
 
 echo "Lager snapshots\n";
-$snapshots=snapshots($path);
+$snapshots=$desc->snapshots($path);
 //$snapshots=false;
 $description='';
 
