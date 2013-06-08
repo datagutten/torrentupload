@@ -1,4 +1,6 @@
 <?Php
-include 'mediainfo.php';
-echo mediainfo($argv[1]);
+include 'functions_description.php';
+$desc=new description;
+echo $desc->mediainfo($argv[1]);
+
 ?>
