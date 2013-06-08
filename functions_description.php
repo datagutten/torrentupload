@@ -65,18 +65,10 @@ class description
 		$mediainfo='';
 		foreach ($output as $key=>$value)
 		{
-		
 			if ($outputkeys[$key]!='header')
-			{
-			$mediainfo.= $outputkeys[$key];
-			//$mediainfo.= spaces($maxlen-strlen($outputkeys[$key]));
-			var_dump($mediainfo=str_pad($mediainfo,$maxlen-strlen($outputkeys[$key]),' '));
-			$mediainfo.= ": $value\n";
-			}
+				$mediainfo.=str_pad($outputkeys[$key],$maxlen+5).": $value\n";
 			else
-				$mediainfo.= "\n[b]".$value."[/b]\n";
-		
-			
+				$mediainfo.= "\n[b]".$value."[/b]\n";	
 		}
 		return $mediainfo;
 	}
