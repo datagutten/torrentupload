@@ -29,7 +29,13 @@ class tvdb
 	{
 		$navn=str_replace('its',"it's",$navn);
 		$key=$this->apikey;
-		$seriesinfo=simplexml_load_file($url='http://www.thetvdb.com/api/GetSeries.php?language=all&seriesname='.urlencode($navn));
+		$seriesinfo=$this->get($url='http://www.thetvdb.com/api/GetSeries.php?language=all&seriesname='.urlencode($navn));
+		if($seriesinfo===false)
+		{
+			echo "Kunne ikke hente info om serie fra tvdb\n";
+			return false;
+		}
+		$seriesinfo=simplexml_load_string($seriesinfo);
 		
 		$id=(int)$seriesinfo->Series->seriesid;
 
