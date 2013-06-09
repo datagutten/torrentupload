@@ -5,11 +5,12 @@ class tvdb
 	private $ch;
 	private $http_status;
 	private $linebreak="\n";
-	function __construct()
+	function __construct($apikey)
 	{
 		$this->ch=curl_init();
 		curl_setopt($this->ch, CURLOPT_RETURNTRANSFER,1);	
 		curl_setopt($this->ch,CURLOPT_FOLLOWLOCATION,1);
+		$this->apikey=$apikey;
 	}
 	public function get($url)
 	{
