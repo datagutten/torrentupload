@@ -1,35 +1,71 @@
 <?Php
-function imgur_upload($filename,$imgur_key)
+class imgur
 {
-	//http://api.imgur.com/examples#uploading_php
-
-    $handle = fopen($filename, "r");
-    $data = fread($handle, filesize($filename));
-
-    // $data is file data
-    $pvars   = array('image' => base64_encode($data), 'key' => $imgur_key);
-	return post('http://api.imgur.com/2/upload.json',$pvars,false,false,false,true); //Returnerer json, bruk json_decode
-
-
-}
-function imgur_upload_dupecheck($file,$imgur_key)
-{
-	$checkfile=basename($file);
-	$md5=md5(file_get_contents($file));
-	if(file_exists("imgur/$checkfile.txt"))
-		$data=file_get_contents("imgur/$checkfile.txt"); //Hvis filen allerede er lastet opp, returner lagrede opplysninger
-	elseif(file_exists("imgur_md5/$md5"))
-		$data=file_get_contents("imgur_md5/$md5");
-	else
+    private $api_key;
+    private $api_secret;
+	private $ch;
+	public $thumbsize='s';
+    function __construct($api_key, $api_secret)
+    {
+        $this->api_key = $api_key;
+        $this->api_secret = $api_secret;
+		$this->ch = curl_init();
+        curl_setopt($this->ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($this->ch, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($this->ch, CURLOPT_HTTPHEADER, array('Authorization: Client-Id '.$this->api_key));
+    }
+	
+	function request($url,$type="GET",$postfields=false)
+    {
+        if ($postfields!==false)
+		{
+            curl_setopt($this->ch,CURLOPT_POST,true);
+			curl_setopt($this->ch,CURLOPT_POSTFIELDS, $postfields);
+		}
+		else
+			curl_setopt($this->ch,CURLOPT_HTTPGET,true);
+		
+		curl_setopt($this->ch, CURLOPT_URL, $url);
+        
+		if (($data = curl_exec($this->ch))===false)
+            throw new Exception(curl_error($this->ch));
+        if($this->return_json)
+			return $data;
+		else
+	        return json_decode($data, true);
+    }
+    function upload($image) //Husk @ foran filnavnet
+    {
+		$json=$this->request("https://api.imgur.com/3/upload","POST",array('image'=>$image));
+		$array=json_decode($json,true);
+		if($array['status']!=200)
+			die("Feil under opplasting: ".$array['data']['error']."\n");
+		return $array;
+    }
+	function upload_dupecheck($file)
 	{
-		echo "Laster opp til imgur\n";
-		if(!file_exists('imgur_md5'))
-			mkdir('imgur_md5');
-		$data=imgur_upload($file,$imgur_key); //Ellers skal filen lastes opp og nye opplysninger lagres og returneres
-		//var_dump($data);
-		//file_put_contents("imgur/$checkfile.txt",$data); 
-		file_put_contents("imgur_md5/$md5",$data);
-	}	
-	return json_decode($data,true);
+		$image=file_get_contents($file);
+		$md5=md5($image);
+		if(file_exists("imgur_md5/$md5")) //Sjekk om filen allerede er lastet opp
+			$data=json_decode(file_get_contents("imgur_md5/$md5"),true); //Returner lagrede opplysninger
+		else
+		{
+			echo "Laster opp til imgur\n";
+			if(!file_exists('imgur_md5'))
+				mkdir('imgur_md5');
+			$data=$this->upload($image); //Ellers skal filen lastes opp og nye opplysninger lagres og returneres
+			file_put_contents("imgur_md5/$md5",json_encode($data));
+		}	
+		return $data;
+	}
+	function thumbnail($link,$size) //http://api.imgur.com/models/image
+	{
+		$pathinfo=pathinfo($link);
+		return str_replace('.'.$pathinfo['extension'],$size.'.'.$pathinfo['extension'],$link); //Lag link til thumbnail
+	}
 }
+
+
 ?>
