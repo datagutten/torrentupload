@@ -6,21 +6,37 @@ class description
 	{
 		require 'tools/dependcheck.php';	
 		$this->dependcheck=new dependcheck;
-		//var_dump($this->dependcheck->depend(array('mediainfo','mplayer')));
+	}
+	public function serieinfo($release) //Henter serie og episodeinfo fra releasenavn
+	{
+		if (preg_match('^(.+?)S*([0-9]*)EP*([0-9]+)^',$release,$serieinfo)) //Finn sesong og episode
+		{
+			$serieinfo[1]=trim(str_replace('.',' ',$serieinfo[1])); //trim serienavn og erstatt . med mellomrom
+			if($serieinfo[2]=='') //Hvis det ikke er oppgitt sesong, sett sesong til 1
+				$serieinfo[2]=1;
+		}
+		else
+			$serieinfo=false;
+		return $serieinfo; //1=serienavn, 2=sesong
 	}
 	public function snapshots($file,$times=array(65,300,600,1000))
 	{
 		if($this->dependcheck->depend('mplayer')!==true)
 		{
-			echo "mplayer is required to make snapshots";
+			echo "mplayer er nødvendig for å lage snapshots\n";
 			return false;	
 		}
 		$snapshots=array();
+		$basename=basename($file);
+		$snapshotdir="snapshots/$basename/";
+		if(!file_exists($snapshotdir))
+			mkdir($snapshotdir,0777,true);
 		foreach ($times as $time)
 		{
-			if(!file_exists($snapshotfile="snapshots/snapshot_".basename($file)."_$time.png"))
+			
+			if(!file_exists($snapshotfile=$snapshotdir.$time.".png"))
 			{
-				shell_exec($cmd="mplayer -quiet -ss $time -vo png:z=9 -ao null -zoom -frames 1 \"$file\" >/dev/null 2>&1");	
+				shell_exec($cmd="mplayer -quiet -ss $time -vo png:z=9 -ao null -zoom -frames 1 \"$file\" >{$this->dependcheck->null} 2>&1");	
 				//die($cmd);
 				if(file_exists('00000001.png'))
 					rename('00000001.png',$snapshots[]=$snapshotfile);
@@ -71,5 +87,18 @@ class description
 				$mediainfo.= "\n[b]".$value."[/b]\n";	
 		}
 		return $mediainfo;
+	}
+	public function description($screenshots,$bannerdata,$description)
+	{
+		if(is_array($bannerdata)) //Hvis bannerdata er et array er bilde funnet på tvdb. 
+			$banner="[img]{$bannerdata['upload']['links']['original']}[/img]"; //Lag banner
+		else //Ellers er det en tittel i ren tekst
+			$banner=$bannerdata;
+		$screens=''; //Lag variabelen screens for å unngå warning
+		foreach ($screenshots as $key=>$screenshot) //Lag screenshots
+		{
+			$screens .= "[url={$screenshot['image']}][img]{$screenshot['thumbnail']}[/img][/url]";
+		}
+		return $banner."\n".$description."\n".$screens; //Sett sammen banner, beskrivelse og screenshots
 	}
 }

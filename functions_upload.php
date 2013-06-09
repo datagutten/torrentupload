@@ -17,7 +17,7 @@ class upload
 		$this->ftp=$ftp;
 		$this->site_url=$site_url;
 		$this->torrent_file_dir=$torrent_file_dir;
-		$this->torrent_auto_dir=$torrent_auto_dir;;
+		$this->torrent_auto_dir=$torrent_auto_dir;
 		
 	}
 	function ftp_upload_torrent($torrent)
@@ -30,6 +30,31 @@ class upload
 		else
 			echo "There was a problem while uploading $torrent\n";
 	}
+	function sendupload_temp($release,$description,$torrent,$parameters=false) //Send opplastingen til siden
+	{
+	global $site_url;
+	//Noen hardkodede paramatere til å begynne med
+
+	$postdata=array(
+                       'MAX_FILE_SIZE' => "3000000",
+                       'file' => '@'.$torrent,
+                       'filetype' => "2",
+                       'name' => $release,
+                       //'#nfo' => $nfo,
+                       /*'scenerelease' => $scene,
+                       'descr' => $description,
+                       'main_cat' => $main_cat,
+					   'sub1_cat' => $sub1_cat,
+					   'sub3_cat' => $sub3_cat,					   
+					   'sub2_cat' => $sub2_cat,*/					   
+                       'anonym' => "yes");
+	$postadata=array_merge($parameters,$postdata);
+	print_r($postdata);
+	
+	return post("$site_url/takeupload.php",$postdata,'cookies.txt',$site_url."/upload.php");
+	}
+	
+	
 	function upload($release,$description,$torrent)
 	{
 		$parameters['scene']='no';
