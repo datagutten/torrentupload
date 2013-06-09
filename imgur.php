@@ -4,7 +4,6 @@ class imgur
     private $api_key;
     private $api_secret;
 	private $ch;
-	public $thumbsize='s';
     function __construct($api_key, $api_secret)
     {
         $this->api_key = $api_key;
@@ -17,7 +16,7 @@ class imgur
         curl_setopt($this->ch, CURLOPT_HTTPHEADER, array('Authorization: Client-Id '.$this->api_key));
     }
 	
-	function request($url,$type="GET",$postfields=false)
+	private function request($url,$type="GET",$postfields=false)
     {
         if ($postfields!==false)
 		{
@@ -31,12 +30,9 @@ class imgur
         
 		if (($data = curl_exec($this->ch))===false)
             throw new Exception(curl_error($this->ch));
-        if($this->return_json)
-			return $data;
-		else
-	        return json_decode($data, true);
+		return $data;
     }
-    function upload($image) //Husk @ foran filnavnet
+    public function upload($image) //Husk @ foran filnavnet
     {
 		$json=$this->request("https://api.imgur.com/3/upload","POST",array('image'=>$image));
 		$array=json_decode($json,true);
@@ -44,7 +40,7 @@ class imgur
 			die("Feil under opplasting: ".$array['data']['error']."\n");
 		return $array;
     }
-	function upload_dupecheck($file)
+	public function upload_dupecheck($file)
 	{
 		$image=file_get_contents($file);
 		$md5=md5($image);
@@ -60,7 +56,7 @@ class imgur
 		}	
 		return $data;
 	}
-	function thumbnail($link,$size) //http://api.imgur.com/models/image
+	public function thumbnail($link,$size) //http://api.imgur.com/models/image
 	{
 		$pathinfo=pathinfo($link);
 		return str_replace('.'.$pathinfo['extension'],$size.'.'.$pathinfo['extension'],$link); //Lag link til thumbnail
