@@ -1,3 +1,6 @@
 [submodule "tools"]
 	path = tools
 	url = git@github.com:datagutten/tools.git
+[submodule "torrent-rw"]
+	path = torrent-rw
+	url = git://github.com/adriengibrat/torrent-rw.git
