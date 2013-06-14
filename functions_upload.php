@@ -5,7 +5,7 @@ class upload
 	public $ftp;
 	public $torrent_file_dir;
 	public $torrent_auto_dir;
-	public $site_url;
+	public $site;
 	function __construct()
 	{
 		$this->ch=curl_init();
@@ -14,11 +14,21 @@ class upload
 		curl_setopt($this->ch, CURLOPT_COOKIEFILE,'cookies.txt');
 		curl_setopt($this->ch, CURLOPT_COOKIEJAR,'cookies.txt');
 		require 'config.php';
-		$this->ftp=$ftp;
-		$this->site_url=$site_url;
+		if(isset($ftp))
+			$this->ftp=$ftp;
+		$this->site=$site;
 		$this->torrent_file_dir=$torrent_file_dir;
 		$this->torrent_auto_dir=$torrent_auto_dir;
 		
+	}
+	function login()
+	{
+		echo "Logging in\n";
+		curl_setopt($this->ch,CURLOPT_URL,$this->site['url']."/takelogin.php");
+		curl_setopt($this->ch,CURLOPT_POST, 1);
+		curl_setopt($this->ch,CURLOPT_POSTFIELDS,array("username" => $this->site['username'], "password" => $this->site['password']));
+		curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/hei.php");	
+		return curl_exec($this->ch);
 	}
 	function ftp_upload_torrent($torrent)
 	{
@@ -30,49 +40,30 @@ class upload
 		else
 			echo "There was a problem while uploading $torrent\n";
 	}
-	function sendupload_temp($release,$description,$torrent,$parameters=false) //Send opplastingen til siden
+	function upload($release,$description,$torrent,$parameters=false) //Upload the torrent to the site. Additional fields can be specified with the last argument
 	{
-	global $site_url;
-	//Noen hardkodede paramatere til å begynne med
-
-	$postdata=array(
-                       'MAX_FILE_SIZE' => "3000000",
-                       'file' => '@'.$torrent,
-                       'filetype' => "2",
-                       'name' => $release,
-                       //'#nfo' => $nfo,
-                       /*'scenerelease' => $scene,
-                       'descr' => $description,
-                       'main_cat' => $main_cat,
-					   'sub1_cat' => $sub1_cat,
-					   'sub3_cat' => $sub3_cat,					   
-					   'sub2_cat' => $sub2_cat,*/					   
-                       'anonym' => "yes");
-	$postadata=array_merge($parameters,$postdata);
+	//Some basic parameters
+	$postdata=array('MAX_FILE_SIZE' => "3000000",
+                    'file' => '@'.$torrent,
+                    'filetype' => "2",
+                    'name' => $release,
+					'descr' => $description,				   
+                    'anonym' => "yes");
+	if(is_array($parameters))
+		$postdata=array_merge($parameters,$postdata);
 	print_r($postdata);
 	
-	return post("$site_url/takeupload.php",$postdata,'cookies.txt',$site_url."/upload.php");
+	curl_setopt($this->ch,CURLOPT_URL,$this->site['url']."/takeupload.php");
+	curl_setopt($this->ch,CURLOPT_POST, 1);
+	curl_setopt($this->ch,CURLOPT_POSTFIELDS, $postdata);
+	curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/upload.php");	
+	
+	return curl_exec($this->ch);
 	}
 	
 	
-	function upload($release,$description,$torrent)
-	{
-		$parameters['scene']='no';
-		$parameters['main_cat']=2;
-		$parameters['sub1_cat']=9;
-		$parameters['sub3_cat']=29; //37=e-bøker
-		$parameters['sub2_cat']=20;
-		
-		return sendupload_temp($release,$description,$torrent,$parameters);
-	}
-	function sendupload($postdata) //Send opplastingen til siden
-	{
-		$postdata['anonym']="yes";
-		return post($this->site_url."/takeupload.php",$postdata,'cookies.txt',$site_url."/upload.php");
-	}
 	function uploadhandler($upload,$release)
 	{
-		global $site_url,$torrent_auto_dir;
 		//Håndter feilet opplasting
 		if(preg_match('^Mislykket opplasting.*\<p\>(.*)\</p\>^sU',$upload,$result))
 			die('Feil: '.$result[1]);
@@ -83,7 +74,11 @@ class upload
 			preg_match('^(download\.php\?id=[0-9]+)\"^',$upload,$file); //Finn torrentfilnavnet
 			echo "Laster ned torrent\n";
 			$torrentfile=$this->torrent_auto_dir.'/'.$release.'.torrent';
-			file_put_contents($torrentfile,get($this->site_url."/".$file[1],'cookies.txt',$site_url."/uploaded.php")); //Last ned torrent
+			curl_setopt($this->ch,CURLOPT_HTTPGET,true);
+			curl_setopt($this->ch,CURLOPT_URL,$this->site['url']."/".$file[1]);
+			curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/uploaded.php");
+			$torrent=curl_exec($this->ch);
+			file_put_contents($torrentfile,$torrent);
 			if(isset($ftp_host))
 			{
 				echo "Laster opp torrent til seedbox\n";
