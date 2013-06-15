@@ -4,11 +4,10 @@ require_once 'functions_description.php';
 require_once 'config.php';
 require 'imgur.php';
 $imgur = new Imgur($api_key, $api_secret);
-
 $tvdb=new tvdb($tvdb_key);
 $desc=new description;
 
-if(isset($_SERVER['HTTP_USER_AGENT'])) //Sjekk om scriptet kjøres i nettleser eller på kommandolinje
+if(isset($_SERVER['HTTP_USER_AGENT'])) //Check if the script is running in a browser
 {
 	$mode='browser';
 	if(!isset($_GET['fil']))
@@ -30,7 +29,7 @@ if(!file_exists($file))
 
 $info = pathinfo($file);
 
-$release = $info['filename']; //Finn navnet på release utifra path
+$release=$info['filename']; //The file name without extension is the name of the release
 
 echo "Lager snapshots\n";
 $snapshots=$desc->snapshots($file);
@@ -50,50 +49,47 @@ if($snapshots!==false)
 else
 	echo "Klarte ikke å lage snapshots\n";
 
-if(preg_match('^(.+) - (.+)\.^U',$info['basename'],$result))
+if(preg_match('^(.+) - (.+)\.^U',$release,$result)) //Check if the name is in the style [series] - [episode name]
 {
 	$serie=$tvdb->hentserie($result[1]);
 	if($serie!==false)
 	{
 		if(isset($argv[2]))
-			$result[2]=$argv[2]; //Hent tittel fra $argv
+			$result[2]=$argv[2]; //Get the series name from the command line
 		$episodedata=$tvdb->finnepisodenavn($result[2],$serie);
 	}
 }
-elseif(isset($episodeinfo) || $episodeinfo=$desc->serieinfo($release)!==false) //Finn serienavnet
-	$episodedata=$tvdb->finnepisode($episodeinfo[1],$episodeinfo[2],$episodeinfo[3]); //Hent informasjon om episoden fra tvdb
-if(isset($episodedata) && $episodedata!==false)
-{
-	$banner="http://thetvdb.com/banners/".$episodedata['Series']['banner'];
-	$localfile='tvdb_cache/banner/'.basename($banner);
-	if(!file_exists($localfile))
-		copy($banner,$localfile); //Last ned banner til lokal fil
-
-	$bannerdata=imgur_upload_dupecheck($localfile,$imgur_key); //Last opp på imgur
+elseif(isset($episodeinfo) || ($episodeinfo=$desc->serieinfo($release))!==false) //Check if the name contains season and episode number
+	$episodedata=$tvdb->finnepisode($episodeinfo[1],$episodeinfo[2],$episodeinfo[3]); //Get information from TheTVDB
 	
-	if($tvdb_cache===false)
-		unlink($tmpfile); //Slett fra /tmp
+if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVDB, get information
+{
+	$bannerimage_tvdb="http://thetvdb.com/banners/".$episodedata['Series']['banner'];
 
+	$imgur_banner=$imgur->upload_dupecheck($bannerimage_tvdb); //Upload the banner to imgur
+	$bannerimage=$imgur_banner['data']['link'];
+	print_r($imgur_banner);
 
-	if($episodedata['Episode']['EpisodeName']!='') //Sjekk om episoden har et navn
+	if($episodedata['Episode']['EpisodeName']!='') //Check if the episode got a name
 		$description.="[b]{$episodedata['Episode']['EpisodeName']}[/b]\n";
 
-	if(!is_array($episodedata['Episode']['Overview'])) //Er det ikke noe overview til episoden vil den komme opp som et tomt array
+	if(!is_array($episodedata['Episode']['Overview'])) //If the episode don't got an overview it will be an empty array
 		$description.=$episodedata['Episode']['Overview'];
-
 }
 
-if(file_exists($info['dirname'].'/common.nfo')) //Se om det ligger en fil med felles info i mappen med releasen
+if(file_exists($info['dirname'].'/common.nfo')) //Check if there is a file with common information for the series
 	$description.="\n\n".file_get_contents($info['dirname'].'/common.nfo');
-if(file_exists($descriptionfile="description/description_".str_replace(':','',$release).'.txt'))
-	$bannerdata=file_get_contents($descriptionfile);
-if(!isset($bannerdata)) //Hvis det ikke er funnet noe bannerbilde, sett banner til releasens navn
-	$bannerdata=$release;
+if(!isset($bannerimage)) //If the series don't got a banner, use the release name instead
+	$bannerdata='[b]'.$release.'[/b]';
+else
+	$banner='[img]'.$bannerimage.'[/img]';
 
-$mediainfo=$desc->mediainfo($file);
+$mediainfo=$desc->mediainfo($file); //Get mediainfo
 
-$description=$desc->description($snapshotlinks,$bannerdata,$description."\nMediainfo:\n".'[pre]'.$mediainfo.'[/pre]'); //All info er klar så beskrivelsen kan settes sammen
-if(isset($_SERVER['HTTP_USER_AGENT'])) //Sjekk om scriptet kjøres i nettleser eller på kommandolinje
+$description=$desc->description($snapshotlinks,$banner."\n".$description."\n\nMediainfo:\n".'[pre]'.$mediainfo.'[/pre]');
+file_put_contents($info['dirname'].'/'.$info['filename'].'.nfo',$description); //Write the complete description to a file
+
+if($mode=='browser') //Display the description in a browser
 {
 	echo '<br>';
 	$showdescription=preg_replace("^\[img\](.*)\[/img\]^U",'<img src="$1" />',$description);
@@ -102,10 +98,7 @@ if(isset($_SERVER['HTTP_USER_AGENT'])) //Sjekk om scriptet kjøres i nettleser e
 	echo nl2br($showdescription);
 	echo "<p><textarea>".$description."</textarea></p>";
 }
-else
-{
-	echo $description;
-	file_put_contents($info['dirname'].'/'.$info['filename'].'.nfo',$description);
-	echo "\n";
-}
-//echo nl2br(ob_get_flush());
+else //Else display it on a console
+	echo $description."\n";
+
+?>

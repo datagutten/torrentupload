@@ -88,17 +88,13 @@ class description
 		}
 		return $mediainfo;
 	}
-	public function description($screenshots,$bannerdata,$description)
+	public function description($screenshots,$description)
 	{
-		if(is_array($bannerdata)) //Hvis bannerdata er et array er bilde funnet på tvdb. 
-			$banner="[img]{$bannerdata['upload']['links']['original']}[/img]"; //Lag banner
-		else //Ellers er det en tittel i ren tekst
-			$banner=$bannerdata;
 		$screens=''; //Lag variabelen screens for å unngå warning
 		foreach ($screenshots as $key=>$screenshot) //Lag screenshots
 		{
 			$screens .= "[url={$screenshot['image']}][img]{$screenshot['thumbnail']}[/img][/url]";
 		}
-		return $banner."\n".$description."\n".$screens; //Sett sammen banner, beskrivelse og screenshots
+		return $description."\n".$screens; //Sett sammen banner, beskrivelse og screenshots
 	}
 }

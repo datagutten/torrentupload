@@ -27,6 +27,8 @@ class tvdb
 	
 	public function hentserie($navn)
 	{
+		if($navn=='')
+			die('getseries was called with no series name');
 		$navn=str_replace('its',"it's",$navn);
 		$key=$this->apikey;
 		$seriesinfo=$this->get($url='http://www.thetvdb.com/api/GetSeries.php?language=all&seriesname='.urlencode($navn));
@@ -35,10 +37,8 @@ class tvdb
 			echo "Kunne ikke hente info om serie fra tvdb\n";
 			return false;
 		}
-		$seriesinfo=simplexml_load_string($seriesinfo);
-		
-		$id=(int)$seriesinfo->Series->seriesid;
 
+		$id=$seriesinfo['Series']['seriesid'];
 		if(is_numeric($id)) //Hvis id er funnet, hent episoder
 		{	
 			$episoder=$this->get("http://www.thetvdb.com/api/$key/series/$id/all/no");
@@ -54,12 +54,8 @@ class tvdb
 	}
 	public function finnepisode($serie,$sesong,$episode) //Finn informasjon om en episode
 	{
-
-		if($this->apikey=='')
-			die('Mangler api key for tvdb');
-		$key=$this->apikey;
 		if (!is_array($serie))
-			$serie=$this->hentserie($serie,$key);
+			$serie=$this->hentserie($serie);
 		
 		if(is_array($serie))
 		{
