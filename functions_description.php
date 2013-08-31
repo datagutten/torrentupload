@@ -9,7 +9,7 @@ class description
 	}
 	public function serieinfo($release) //Henter serie og episodeinfo fra releasenavn
 	{
-		if (preg_match('^(.+?)S*([0-9]*)EP*([0-9]+)^',$release,$serieinfo)) //Finn sesong og episode
+		if (preg_match('^(.+?)S*([0-9]*)EP*([0-9]+)^i',$release,$serieinfo)) //Try to get season and episode info from the release name
 		{
 			$serieinfo[1]=trim(str_replace('.',' ',$serieinfo[1])); //trim serienavn og erstatt . med mellomrom
 			if($serieinfo[2]=='') //Hvis det ikke er oppgitt sesong, sett sesong til 1
