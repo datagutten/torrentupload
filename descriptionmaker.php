@@ -49,7 +49,7 @@ if($snapshots!==false)
 else
 	echo "Klarte ikke å lage snapshots\n";
 
-if(preg_match('^(.+) - (.+)\.^U',$release,$result)) //Check if the name is in the style [series] - [episode name]
+if(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in the style [series] - [episode name]
 {
 	$serie=$tvdb->hentserie($result[1]);
 	if($serie!==false)
