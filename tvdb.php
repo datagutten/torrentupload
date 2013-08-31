@@ -90,8 +90,8 @@ class tvdb
 		//print_r($episoder);
 		foreach ($episoder['Episode'] as $episode)
 		{
-			if(is_array($episode['EpisodeName']))
-				return false;
+			if(is_array($episode['EpisodeName'])) //Skip episodes with no name
+				continue;
 			if(stripos($episode['EpisodeName'],$find)!==false)
 			{
 				$found=true;
