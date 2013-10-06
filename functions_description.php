@@ -88,6 +88,18 @@ class description
 		}
 		return $mediainfo;
 	}
+	public function simplemediainfo($path)
+	{
+		if($this->dependcheck->depend('mediainfo')!==true)
+		{
+			echo "Could not find mediainfo\n";
+			return false;	
+		}
+		$info=shell_exec($cmd="mediainfo \"$path\" 2>&1");
+		$info=preg_replace("/Complete name.+\n/",'',$info);
+		$info=preg_replace("/Unique ID.+\n/",'',$info);
+		return $info;
+	}
 	public function description($screenshots,$description)
 	{
 		$screens=''; //Lag variabelen screens for å unngå warning
