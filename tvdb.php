@@ -25,20 +25,30 @@ class tvdb
 			return json_decode(json_encode(simplexml_load_string($data)),true);
 	}
 	
-	public function hentserie($navn)
+	public function hentserie($search)
 	{
-		if($navn=='')
-			die('getseries was called with no series name');
-		$navn=str_replace('its',"it's",$navn);
 		$key=$this->apikey;
-		$seriesinfo=$this->get($url='http://www.thetvdb.com/api/GetSeries.php?language=all&seriesname='.urlencode($navn));
-		if($seriesinfo===false)
-		{
-			echo "Kunne ikke hente info om serie fra tvdb\n";
-			return false;
+		if($search=='')
+			die('getseries was called without specifying any series');
+		if(!is_numeric($search))
+		{	
+			$search=str_replace('its',"it's",$search);
+			$seriesinfo=$this->get($url='http://www.thetvdb.com/api/GetSeries.php?language=all&seriesname='.urlencode($search));
+			if($seriesinfo===false)
+			{
+				echo "Error connecting to TheTVDB".$this->linebreak;
+				return false;
+			}
+			if(!isset($seriesinfo['Series']['seriesid']))
+			{
+				echo "Series not found on TheTVDB".$this->linebreak;
+				return false;
+			}
+			$id=$seriesinfo['Series']['seriesid'];
 		}
+		else
+			$id=$search;
 
-		$id=$seriesinfo['Series']['seriesid'];
 		if(is_numeric($id)) //Hvis id er funnet, hent episoder
 		{	
 			$episoder=$this->get("http://www.thetvdb.com/api/$key/series/$id/all/no");
