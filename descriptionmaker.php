@@ -18,10 +18,15 @@ if(isset($_SERVER['HTTP_USER_AGENT'])) //Check if the script is running in a bro
 else
 {
 	$mode='console';
+	$options = getopt("",array('tvdb:','nomediainfo'));
 	if(!isset($argv[1]))
 		die('Filen det skal lages beskrivelse for må spesifiseres på kommandolinjen (php descriptionmaker.php dinfil.mkv');
 	else
 		$file=$argv[1];
+	if(isset($options['tvdb']))
+		$tvdb_id=$options['tvdb'];
+	end($argv);
+	$file=$argv[key($argv)];
 }
 
 if(!file_exists($file))
