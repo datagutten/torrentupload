@@ -61,15 +61,17 @@ if(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in the 
 }
 elseif(isset($episodeinfo) || ($episodeinfo=$desc->serieinfo($release))!==false) //Check if the name contains season and episode number
 	$episodedata=$tvdb->finnepisode($episodeinfo[1],$episodeinfo[2],$episodeinfo[3]); //Get information from TheTVDB
-	
+
+$banner='[b]'.$release.'[/b]'; //In case the series is not found or don't have a banner, use the relase name as banner	
 if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVDB, get information
 {
-	$bannerimage_tvdb="http://thetvdb.com/banners/".$episodedata['Series']['banner'];
-
-	$imgur_banner=$imgur->upload_dupecheck($bannerimage_tvdb); //Upload the banner to imgur
-	$bannerimage=$imgur_banner['data']['link'];
-	print_r($imgur_banner);
-
+	if(!is_array($episodedata['Series']['banner']))
+	{
+		$bannerimage_tvdb="http://thetvdb.com/banners/".$episodedata['Series']['banner'];
+		$imgur_banner=$imgur->upload_dupecheck($bannerimage_tvdb); //Upload the banner to imgur
+		$bannerimage=$imgur_banner['data']['link'];
+		$banner='[img]'.$bannerimage.'[/img]';
+	}
 	if($episodedata['Episode']['EpisodeName']!='') //Check if the episode got a name
 		$description.="[b]{$episodedata['Episode']['EpisodeName']}[/b]\n";
 
@@ -79,10 +81,7 @@ if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVD
 
 if(file_exists($info['dirname'].'/common.nfo')) //Check if there is a file with common information for the series
 	$description.="\n\n".file_get_contents($info['dirname'].'/common.nfo');
-if(!isset($bannerimage)) //If the series don't got a banner, use the release name instead
-	$bannerdata='[b]'.$release.'[/b]';
-else
-	$banner='[img]'.$bannerimage.'[/img]';
+
 
 $mediainfo=$desc->mediainfo($file); //Get mediainfo
 
