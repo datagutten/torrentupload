@@ -88,9 +88,12 @@ if(file_exists($info['dirname'].'/common.nfo')) //Check if there is a file with 
 	$description.="\n\n".file_get_contents($info['dirname'].'/common.nfo');
 
 
-$mediainfo=$desc->mediainfo($file); //Get mediainfo
+if(!isset($options['nomediainfo']) && ($mediainfo=$desc->mediainfo($file))!==false)
+	$description.="\nMediainfo:\n".'[pre]'.$mediainfo.'[/pre]';
 
-$description=$desc->description($snapshotlinks,$banner."\n".$description."\n\nMediainfo:\n".'[pre]'.$mediainfo.'[/pre]');
+else
+	$mediainfo='';
+$description=$desc->description($snapshotlinks,$banner."\n".$description."\n");
 file_put_contents($info['dirname'].'/'.$info['filename'].'.nfo',$description); //Write the complete description to a file
 
 if($mode=='browser') //Display the description in a browser
