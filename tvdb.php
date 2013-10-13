@@ -25,7 +25,7 @@ class tvdb
 			return json_decode(json_encode(simplexml_load_string($data)),true);
 	}
 	
-	public function hentserie($search)
+	public function findseries($search)
 	{
 		$key=$this->apikey;
 		if($search=='')
@@ -65,7 +65,7 @@ class tvdb
 	public function finnepisode($serie,$sesong,$episode) //Finn informasjon om en episode
 	{
 		if (!is_array($serie))
-			$serie=$this->hentserie($serie);
+			$serie=$this->findseries($serie);
 		
 		if(is_array($serie))
 		{

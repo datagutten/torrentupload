@@ -56,7 +56,7 @@ else
 
 if(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in the style [series] - [episode name]
 {
-	$serie=$tvdb->hentserie($result[1]);
+	$serie=$tvdb->findseries($result[1]);
 	if($serie!==false)
 	{
 		if(isset($argv[2]))
