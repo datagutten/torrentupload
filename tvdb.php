@@ -5,6 +5,7 @@ class tvdb
 	private $ch;
 	private $http_status;
 	private $linebreak="\n";
+	public $lang='no';
 	function __construct($apikey)
 	{
 		$this->ch=curl_init();
@@ -51,14 +52,11 @@ class tvdb
 
 		if(is_numeric($id)) //Hvis id er funnet, hent episoder
 		{	
-			$episoder=$this->get("http://www.thetvdb.com/api/$key/series/$id/all/no");
-			if($episoder===false && $this->http_status==404)
-				if(!$episoder=$this->get($url="http://www.thetvdb.com/api/$key/series/$id/all"))
-					die("Finner ikke informasjon om serien".$this->linebreak);
+			$episoder=$this->get($url="http://www.thetvdb.com/api/$key/series/$id/all/".$this->lang.'.xml');
+			if(($episoder===false && $this->http_status==404) || $episoder['Series']['SeriesName']=='')
+				if(!$episoder=$this->get($url="http://www.thetvdb.com/api/$key/series/$id/all")) //Information was not found in the preferred language, try English
+					die("Could not find episodes for the series".$this->linebreak);
 
-			if ($episoder['Series']['SeriesName']=='')
-				$episoder=$this->get("http://www.thetvdb.com/api/$key/series/$id/all/en");
-				
 			return $episoder;
 		}
 	}
