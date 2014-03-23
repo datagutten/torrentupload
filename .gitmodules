@@ -4,3 +4,6 @@
 [submodule "torrent-rw"]
 	path = torrent-rw
 	url = git://github.com/adriengibrat/torrent-rw.git
+[submodule "tvdb"]
+	path = tvdb
+	url = git@github.com:datagutten/tvdb.git
