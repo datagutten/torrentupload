@@ -93,7 +93,10 @@ if(!isset($options['nomediainfo']) && ($mediainfo=$desc->mediainfo($file))!==fal
 
 else
 	$mediainfo='';
-$description=$desc->description($snapshotlinks,$banner."\n".$description."\n");
+if(isset($snapshotlinks))
+	$description=$desc->description($snapshotlinks,$banner."\n".$description."\n");
+else
+	$description=$banner."\n".$description."\n";
 file_put_contents($info['dirname'].'/'.$info['filename'].'.nfo',$description); //Write the complete description to a file
 
 if($mode=='browser') //Display the description in a browser
