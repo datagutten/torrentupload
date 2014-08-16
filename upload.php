@@ -1,9 +1,8 @@
 <?Php
 chdir(dirname(realpath(__FILE__))); //Bytt til mappen scriptet ligger i så relative filbaner blir riktige
 require_once 'config.php';
-require_once 'functions.php';
 require_once 'ftp.php';
-require_once 'dependcheck.php';
+require_once 'tools/dependcheck.php';
 depend('buildtorrent');
 require 'functions_upload.php';
 $upload=new upload;

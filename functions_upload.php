@@ -65,8 +65,8 @@ class upload
 	function uploadhandler($upload,$release)
 	{
 		//Håndter feilet opplasting
-		if(preg_match('^Mislykket opplasting.*\<p\>(.*)\</p\>^sU',$upload,$result))
-			die('Feil: '.$result[1]);
+		if(preg_match('^Mislykket opplasting.*\<div class="contentbox"\>(.*)\</div\>^sU',$upload,$result) || preg_match('^Feilmelding:\</b\>(.+)\</p\>^',$upload,$result))
+			die('Feil: '.utf8_encode($result[1])."\n");
 		elseif(strpos($upload,'En torrent med lignende innhold')!==false)
 			die("Allerede lastet opp\n");
 		else
@@ -79,7 +79,7 @@ class upload
 			curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/uploaded.php");
 			$torrent=curl_exec($this->ch);
 			file_put_contents($torrentfile,$torrent);
-			if(isset($ftp_host))
+			if(isset($this->ftp['host']))
 			{
 				echo "Laster opp torrent til seedbox\n";
 				$this->ftp_upload_torrent($torrentfile);
