@@ -43,12 +43,14 @@ class upload
 	function upload($release,$description,$torrent,$parameters=false) //Upload the torrent to the site. Additional fields can be specified with the last argument
 	{
 	//Some basic parameters
-	$postdata=array('MAX_FILE_SIZE' => "3000000",
-                    'file' => '@'.$torrent,
-                    'filetype' => "2",
-                    'name' => $release,
+		$torrentfile=new CURLFile($torrent,'application/x-bittorrent');
+		$postdata=array('MAX_FILE_SIZE' => "3145728",
+					'name' => $release,
+                    'file' => $torrentfile,
+                    'nfopos' => "top",
+					'infourl' => "",
 					'descr' => $description,				   
-                    'anonym' => "yes");
+                    'mediainfo' => "");
 	if(is_array($parameters))
 		$postdata=array_merge($parameters,$postdata);
 	print_r($postdata);
