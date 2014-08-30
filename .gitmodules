@@ -7,3 +7,6 @@
 [submodule "tvdb"]
 	path = tvdb
 	url = git@github.com:datagutten/tvdb.git
+[submodule "someimage"]
+	path = someimage
+	url = git@github.com:datagutten/someimage.git
