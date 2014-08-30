@@ -18,7 +18,7 @@ if(isset($_SERVER['HTTP_USER_AGENT'])) //Check if the script is running in a bro
 else
 {
 	$mode='console';
-	$options = getopt("",array('tvdb:','nomediainfo'));
+	$options = getopt("",array('tvdb:','nomediainfo','nosnapshots'));
 	if(!isset($argv[1]))
 		die('Filen det skal lages beskrivelse for må spesifiseres på kommandolinjen (php descriptionmaker.php dinfil.mkv');
 	else
@@ -35,24 +35,26 @@ if(!file_exists($file))
 $info = pathinfo($file);
 
 $release=$info['filename']; //The file name without extension is the name of the release
-
-echo "Lager snapshots\n";
-$snapshots=$desc->snapshots($file);
-
 $description='';
 
-if($snapshots!==false)
+if(!isset($options['nosnapshots']))
 {
-	echo "Laster opp snapshots\n";
-	foreach ($snapshots as $key=>$snapshot)
+	echo "Creating snapshots\n";
+	$snapshots=$desc->snapshots($file);
+
+	if($snapshots!==false)
 	{
-		$upload=$imgur->upload_dupecheck($snapshot,$imgur_key);
-		$snapshotlinks[$key]['image']=$upload['data']['link'];
-		$snapshotlinks[$key]['thumbnail']=$imgur->thumbnail($upload['data']['link'],'s');
+		echo "Uploading snapshots\n";
+		foreach ($snapshots as $key=>$snapshot)
+		{
+			$upload=$imgur->upload_dupecheck($snapshot,$imgur_key);
+			$snapshotlinks[$key]['image']=$upload['data']['link'];
+			$snapshotlinks[$key]['thumbnail']=$imgur->thumbnail($upload['data']['link'],'s');
+		}
 	}
+	else
+		echo "Could not create snapshots\n";
 }
-else
-	echo "Klarte ikke å lage snapshots\n";
 
 if(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in the style [series] - [episode name]
 {
