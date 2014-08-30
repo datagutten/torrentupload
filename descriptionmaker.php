@@ -1,5 +1,5 @@
 <?Php
-require_once 'tools/tvdb.php';
+require_once 'tvdb/tvdb.php';
 require_once 'functions_description.php';
 require_once 'config.php';
 require 'imgur.php';
