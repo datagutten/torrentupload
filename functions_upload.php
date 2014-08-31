@@ -6,6 +6,7 @@ class upload
 	public $torrent_file_dir;
 	public $torrent_auto_dir;
 	public $site;
+	public $scriptdir;
 	function __construct()
 	{
 		$this->ch=curl_init();
@@ -19,6 +20,9 @@ class upload
 		$this->site=$site;
 		$this->torrent_file_dir=$torrent_file_dir;
 		$this->torrent_auto_dir=$torrent_auto_dir;
+		$this->scriptdir=dirname(__FILE__).'/';
+		if(!file_exists($this->scriptdir.'uploads'))
+			mkdir($this->scriptdir.'uploads');
 		
 	}
 	function login()
@@ -107,7 +111,7 @@ class upload
 				$this->ftp_upload_torrent($torrentfile);
 			}
 		}
-		file_put_contents("upload_$release.txt",$upload);	
+		file_put_contents($this->scriptdir."uploads/upload_$release.txt",$upload);
 	}
 }
 	
