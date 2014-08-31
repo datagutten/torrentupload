@@ -2,8 +2,8 @@
 require_once 'tvdb/tvdb.php';
 require_once 'functions_description.php';
 require_once 'config.php';
-require 'imgur.php';
-$imgur = new Imgur($api_key, $api_secret);
+require 'someimage/someimage.php';
+$imagehost=new someimage;
 $tvdb=new tvdb($tvdb_key);
 $desc=new description;
 
@@ -47,9 +47,7 @@ if(!isset($options['nosnapshots']))
 		echo "Uploading snapshots\n";
 		foreach ($snapshots as $key=>$snapshot)
 		{
-			$upload=$imgur->upload_dupecheck($snapshot,$imgur_key);
-			$snapshotlinks[$key]['image']=$upload['data']['link'];
-			$snapshotlinks[$key]['thumbnail']=$imgur->thumbnail($upload['data']['link'],'s');
+			$snapshotlinks[$key]=$imagehost->upload($snapshot);
 		}
 	}
 	else
@@ -75,9 +73,8 @@ if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVD
 	if(!is_array($episodedata['Series']['banner']))
 	{
 		$bannerimage_tvdb="http://thetvdb.com/banners/".$episodedata['Series']['banner'];
-		$imgur_banner=$imgur->upload_dupecheck($bannerimage_tvdb); //Upload the banner to imgur
-		$bannerimage=$imgur_banner['data']['link'];
-		$banner='[img]'.$bannerimage.'[/img]';
+		$upload_banner=$imagehost->upload($bannerimage_tvdb); //Upload the banner
+		$banner='[img]'.$upload_banner['image'].'[/img]';
 	}
 	if($episodedata['Episode']['EpisodeName']!='') //Check if the episode got a name
 		$description.="[b]{$episodedata['Episode']['EpisodeName']}[/b]\n";
