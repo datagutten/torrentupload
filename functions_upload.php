@@ -50,31 +50,33 @@ class upload
 		$filename=preg_replace('/[^\x20-\x7E]/','', $filename); //Remove other non printable characters
 		return $filename;
 	}
-	function upload($release,$description,$torrent,$parameters=false) //Upload the torrent to the site. Additional fields can be specified with the last argument
+	function buildupload($template,$torrentfile,$title,$description,$mediainfo)
 	{
-	//Some basic parameters
-		$torrentfile=new CURLFile($torrent,'application/x-bittorrent');
-		$postdata=array('MAX_FILE_SIZE' => "3145728",
-					'name' => $release,
-                    'file' => $torrentfile,
-                    'nfopos' => "top",
-					'infourl' => "",
-					'descr' => $description,				   
-                    'mediainfo' => "");
-	if(is_array($parameters))
-		$postdata=array_merge($parameters,$postdata);
-	print_r($postdata);
-
+		if(file_exists($templatefile=$this->scriptdir.'templates/'.$template.'.json'))
+			$template_topic=json_decode(file_get_contents($templatefile),true);
+		if(file_exists($templatefile=$this->scriptdir.'templates/site_'.$this->site['name'].'.json'))
+			$template_site=json_decode(file_get_contents($templatefile),true);
+		$postdata=array_merge($template_site,$template_topic);
+		$postdata=str_replace(array('--title--','--description--','--mediainfo--'),array($title,$description,$mediainfo),$postdata);
+		$key=array_search('--torrentfile--',$postdata);
+		if($key!==false)
+			$postdata[$key]=new CURLfile($torrentfile);
+		else
+			trigger_error("Invalid template, torrent file missing",E_USER_ERROR);
+		return $postdata;
+	}
+	function sendupload($postdata) //Upload the torrent to the site. Additional fields can be specified with the last argument
+	{
 		if($this->site['charset']!='UTF-8')
 		{
 			$postdata['name']=utf8_decode($postdata['name']);
 			$postdata['descr']=utf8_decode($postdata['descr']);
 		}
 	
-	curl_setopt($this->ch,CURLOPT_URL,$this->site['url']."/takeupload.php");
-	curl_setopt($this->ch,CURLOPT_POST, 1);
-	curl_setopt($this->ch,CURLOPT_POSTFIELDS, $postdata);
-	curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/upload.php");	
+		curl_setopt($this->ch,CURLOPT_URL,$this->site['url']."/takeupload.php");
+		curl_setopt($this->ch,CURLOPT_POST, 1);
+		curl_setopt($this->ch,CURLOPT_POSTFIELDS, $postdata);
+		curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/upload.php");	
 	
 		$upload=curl_exec($this->ch);
 	
@@ -86,13 +88,17 @@ class upload
 			return false;
 		}
 	}
-	
+	function upload($template,$torrentfile,$title,$description,$mediainfo)
+	{
+		return $this->sendupload($this->buildupload($template,$torrentfile,$title,$description,$mediainfo));
+	}
+
 	
 	function uploadhandler($upload,$release)
 	{
 		//Håndter feilet opplasting
 		if(preg_match('^Mislykket opplasting.*\<div class="contentbox"\>(.*)\</div\>^sU',$upload,$result) || preg_match('^Feilmelding:\</b\>(.+)\</p\>^',$upload,$result))
-			die('Feil: '.utf8_encode($result[1])."\n");
+			die('Error: '.utf8_encode(trim($result[1]))."\n");
 		elseif(strpos($upload,'En torrent med lignende innhold')!==false)
 			die("Allerede lastet opp\n");
 		else
