@@ -70,16 +70,16 @@ elseif(isset($episodeinfo) || ($episodeinfo=$desc->serieinfo($release))!==false)
 $banner='[b]'.$release.'[/b]'; //In case the series is not found or don't have a banner, use the relase name as banner	
 if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVDB, get information
 {
-	if(!is_array($episodedata['Series']['banner']))
+	if(!empty($episodedata['Series']['banner']))
 	{
 		$bannerimage_tvdb="http://thetvdb.com/banners/".$episodedata['Series']['banner'];
 		$upload_banner=$imagehost->upload($bannerimage_tvdb); //Upload the banner
 		$banner='[img]'.$upload_banner['image'].'[/img]';
 	}
-	if($episodedata['Episode']['EpisodeName']!='') //Check if the episode got a name
+	if(!empty($episodedata['Episode']['EpisodeName'])) //Check if the episode got a name
 		$description.="[b]{$episodedata['Episode']['EpisodeName']}[/b]\n";
 
-	if(!is_array($episodedata['Episode']['Overview'])) //If the episode don't got an overview it will be an empty array
+	if(!empty($episodedata['Episode']['Overview'])) //If the episode don't got an overview it will be an empty array
 		$description.=$episodedata['Episode']['Overview'];
 }
 
@@ -92,6 +92,7 @@ if(!isset($options['nomediainfo']) && ($mediainfo=$desc->mediainfo($file))!==fal
 
 else
 	$mediainfo='';
+
 if(isset($snapshotlinks))
 	$description=$desc->description($snapshotlinks,$banner."\n".$description."\n");
 else
