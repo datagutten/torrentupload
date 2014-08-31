@@ -30,15 +30,15 @@ class upload
 		curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/hei.php");	
 		return curl_exec($this->ch);
 	}
-	function ftp_upload_torrent($torrent)
+	function ftp_upload_torrent($torrentfile)
 	{
 		$conn_id=ftp_connect($this->ftp['host']) or die("Couldn't connect to ftp");
 		ftp_login($conn_id, $this->ftp['username'], $this->ftp['password']) or die ("Couldn't log on");
 		
-		if (ftp_put($conn_id,$torrent,FTP_ASCII))
-			echo "successfully uploaded $torrent\n";
+		if (ftp_put($conn_id,$this->ftp['path'].basename($torrentfile),$torrentfile,FTP_BINARY))
+			echo "successfully uploaded $torrentfile\n";
 		else
-			echo "There was a problem while uploading $torrent\n";
+			echo "There was a problem while uploading $torrentfile\n";
 	}
 	function upload($release,$description,$torrent,$parameters=false) //Upload the torrent to the site. Additional fields can be specified with the last argument
 	{
