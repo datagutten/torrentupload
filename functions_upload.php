@@ -40,6 +40,12 @@ class upload
 		else
 			echo "There was a problem while uploading $torrentfile\n";
 	}
+	function cleanfilename($filename) //Remove special charaters from a filename
+	{
+		$filename=str_replace(array('æ','ø','å','Æ','Ø','Å'),array('e','o','a','E','O','A'),$filename);
+		$filename=preg_replace('/[^\x20-\x7E]/','', $filename); //Remove other non printable characters
+		return $filename;
+	}
 	function upload($release,$description,$torrent,$parameters=false) //Upload the torrent to the site. Additional fields can be specified with the last argument
 	{
 	//Some basic parameters
@@ -54,6 +60,12 @@ class upload
 	if(is_array($parameters))
 		$postdata=array_merge($parameters,$postdata);
 	print_r($postdata);
+
+		if($this->site['charset']!='UTF-8')
+		{
+			$postdata['name']=utf8_decode($postdata['name']);
+			$postdata['descr']=utf8_decode($postdata['descr']);
+		}
 	
 	curl_setopt($this->ch,CURLOPT_URL,$this->site['url']."/takeupload.php");
 	curl_setopt($this->ch,CURLOPT_POST, 1);
