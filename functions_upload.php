@@ -60,7 +60,15 @@ class upload
 	curl_setopt($this->ch,CURLOPT_POSTFIELDS, $postdata);
 	curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/upload.php");	
 	
-	return curl_exec($this->ch);
+		$upload=curl_exec($this->ch);
+	
+		if($upload!==false)
+			return $upload;
+		else
+		{
+			trigger_error(curl_error($this->ch),E_USER_ERROR);
+			return false;
+		}
 	}
 	
 	
