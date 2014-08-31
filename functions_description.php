@@ -19,13 +19,30 @@ class description
 			$serieinfo=false;
 		return $serieinfo; //1=serienavn, 2=sesong
 	}
-	public function snapshots($file,$times=array(65,300,600,1000))
+	public function snapshots($file,$times=false) //Second argument can be an array with time positions or a number of snapshots to be created
 	{
 		if($this->dependcheck->depend('mplayer')!==true)
 		{
 			echo "mplayer er nødvendig for å lage snapshots\n";
 			return false;	
 		}
+		if($this->dependcheck->depend('mediainfo')===true)
+		{
+			if(!is_array($times))
+			{
+				if(is_numeric($times))
+					$count=$times;
+				elseif($times===false)
+					$count=4;
+				$duration=floor(shell_exec("mediainfo --Inform=\"General;%Duration%\" \"$file\"")/1000);
+				$step=floor($duration/($count+1)); //Get the step size
+				$times=range($step,$duration,$step); //Make an array with the positions
+				array_pop($times); //remove the last position
+			}
+		}
+		else
+			$times=array(65,300,600,1000); //mediainfo not found, use default positions
+		
 		$snapshots=array();
 		$basename=basename($file);
 		$snapshotdir="snapshots/$basename/";
