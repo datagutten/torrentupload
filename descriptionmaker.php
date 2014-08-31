@@ -81,6 +81,9 @@ if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVD
 
 	if(!empty($episodedata['Episode']['Overview'])) //If the episode don't got an overview it will be an empty array
 		$description.=$episodedata['Episode']['Overview'];
+	elseif(!empty($episodedata['Series']['Overview'])) //Use overview for the series
+		$description.=$episodedata['Series']['Overview'];
+
 }
 
 if(file_exists($info['dirname'].'/common.nfo')) //Check if there is a file with common information for the series
