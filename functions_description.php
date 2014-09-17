@@ -53,10 +53,12 @@ class description
 			
 			if(!file_exists($snapshotfile=$snapshotdir.$time.".png"))
 			{
-				shell_exec($cmd="mplayer -quiet -ss $time -vo png:z=9 -ao null -zoom -frames 1 \"$file\" >{$this->dependcheck->null} 2>&1");	
+				$mplayer_log=shell_exec($cmd="mplayer -quiet -ss $time -vo png:z=9 -ao null -zoom -frames 1 \"$file\" 2>&1");	
 				//die($cmd);
-				if(file_exists('00000001.png'))
-					rename('00000001.png',$snapshots[]=$snapshotfile);
+				if(file_exists($tmpfile='00000001.png'))
+					rename($tmpfile,$snapshots[]=$snapshotfile);
+				else
+					trigger_error("Failed to create snapshot: $mplayer_log",E_USER_ERROR);
 			}
 			else
 				$snapshots[]=$snapshotfile;
