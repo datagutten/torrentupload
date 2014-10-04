@@ -39,8 +39,10 @@ if (!file_exists($torrentfile))
 }
 else
 	echo "Torrent is already created\n";
-
-$description=file_get_contents($basefile.'.nfo');
+if(!file_exists($basefile.'.txt'))
+	trigger_error("Could not find description file",E_USER_ERROR);
+else
+	$description=file_get_contents($basefile.'.txt');
 echo "Uploading torrent\n";
 
 if(file_exists($templatefile="templates/{$argv[2]}.json"))

@@ -102,7 +102,7 @@ if(isset($snapshotlinks))
 else
 	$description=$banner."\n".$description."\n";
 
-file_put_contents($info['dirname'].'/'.$info['filename'].'.nfo',$description); //Write the complete description to a file
+file_put_contents($info['dirname'].'/'.$info['filename'].'.txt',$description); //Write the complete description to a file
 file_put_contents($info['dirname'].'/'.$info['filename'].'.mediainfo',$desc->simplemediainfo($file)); //Write mediainfo to a file
 
 if($mode=='browser') //Display the description in a browser
