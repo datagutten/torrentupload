@@ -2,10 +2,14 @@
 class description
 {
 	private $dependcheck;
+	private $video;
 	function __construct()
 	{
-		require 'tools/dependcheck.php';	
+		require_once 'tools/dependcheck.php';
 		$this->dependcheck=new dependcheck;
+		require_once 'tools/video.php';
+		$this->video=new video;
+
 	}
 	public function serieinfo($release) //Henter serie og episodeinfo fra releasenavn
 	{
@@ -19,55 +23,14 @@ class description
 			$serieinfo=false;
 		return $serieinfo; //1=serienavn, 2=sesong
 	}
-	public function snapshots($file,$times=false) //Second argument can be an array with time positions or a number of snapshots to be created
+	public function snapshots($file)
 	{
-		if($this->dependcheck->depend('mplayer')!==true)
-		{
-			echo "mplayer er nødvendig for å lage snapshots\n";
-			return false;	
-		}
-		if($this->dependcheck->depend('mediainfo')===true)
-		{
-			if(!is_array($times))
-			{
-				if(is_numeric($times))
-					$count=$times;
-				elseif($times===false)
-					$count=4;
-				$duration=floor(shell_exec("mediainfo --Inform=\"General;%Duration%\" \"$file\"")/1000);
-				$step=floor($duration/($count+1)); //Get the step size
-				$times=range($step,$duration,$step); //Make an array with the positions
-				array_pop($times); //remove the last position
-			}
-		}
-		else
-			$times=array(65,300,600,1000); //mediainfo not found, use default positions
-		
-		$snapshots=array();
-		$basename=basename($file);
-		$snapshotdir="snapshots/$basename/";
-		if(!file_exists($snapshotdir))
+		$positions=$this->video->snapshotsteps($file,4);
+		if(!file_exists($snapshotdir=dirname($file).'/snapshots'))
 			mkdir($snapshotdir,0777,true);
-		foreach ($times as $time)
-		{
-			
-			if(!file_exists($snapshotfile=$snapshotdir.$time.".png"))
-			{
-				$mplayer_log=shell_exec($cmd="mplayer -quiet -ss $time -vo png:z=9 -ao null -zoom -frames 1 \"$file\" 2>&1");	
-				//die($cmd);
-				if(file_exists($tmpfile='00000001.png'))
-					rename($tmpfile,$snapshots[]=$snapshotfile);
-				else
-					trigger_error("Failed to create snapshot: $mplayer_log",E_USER_ERROR);
-			}
-			else
-				$snapshots[]=$snapshotfile;
-			
-		}
-		if(!isset($snapshots))
-			$snapshots=false;
-		return $snapshots; //Returnerer et array med bildenes filnavn
+		return $this->video->snapshots($file,$positions,$snapshotdir);
 	}
+
 	public function mediainfo($path)
 	{
 		if($this->dependcheck->depend('mediainfo')!==true)
@@ -81,8 +44,6 @@ class description
 		$xml=json_decode(json_encode($xml),true);
 		if(!isset($xml['File']))
 			die("Kunne ikke hente mediainfo\n");
-		//print_r($xml['File']['track']);
-		
 		foreach ($xml['File']['track'] as $data)
 		{
 			$output[]=$data['@attributes']['type'];
