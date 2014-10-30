@@ -54,7 +54,13 @@ if(!isset($options['nosnapshots']))
 		echo "Could not create snapshots\n";
 }
 
-if(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in the style [series] - [episode name]
+if(isset($episodeinfo) || ($episodeinfo=$desc->serieinfo($release))!==false) //Check if the name contains season and episode number
+{
+	if(isset($tvdb_id))
+		$episodeinfo[1]=$tvdb_id;
+	$episodedata=$tvdb->finnepisode($episodeinfo[1],$episodeinfo[2],$episodeinfo[3]); //Get information from TheTVDB
+}
+elseif(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in the style [series] - [episode name]
 {
 	if(isset($tvdb_id))
 		$result[1]=$tvdb_id;
@@ -66,12 +72,7 @@ if(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in the 
 		$episodedata=$tvdb->finnepisodenavn($result[2],$serie);
 	}
 }
-elseif(isset($episodeinfo) || ($episodeinfo=$desc->serieinfo($release))!==false) //Check if the name contains season and episode number
-{
-	if(isset($tvdb_id))
-		$episodeinfo[1]=$tvdb_id;
-	$episodedata=$tvdb->finnepisode($episodeinfo[1],$episodeinfo[2],$episodeinfo[3]); //Get information from TheTVDB
-}
+
 $banner='[b]'.$release.'[/b]'; //In case the series is not found or don't have a banner, use the relase name as banner	
 if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVDB, get information
 {
