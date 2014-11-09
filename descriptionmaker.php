@@ -35,6 +35,21 @@ if(!file_exists($file))
 $info = pathinfo($file);
 
 $release=$info['filename']; //The file name without extension is the name of the release
+if(is_dir($file))
+{
+	$dir=scandir($file);
+	natsort($dir); //Sort by name to find first episode in a series
+	foreach($dir as $subfile)
+	{
+		$finfo = new finfo(FILEINFO_MIME);
+		$mime=$finfo->file($file.'/'.$subfile);
+		if(substr($mime,0,5)=='video') //Find first video file
+		{
+			$file=$file.'/'.$subfile;
+			break;
+		}
+	}
+}
 $description='';
 
 if(!isset($options['nosnapshots']))
@@ -52,6 +67,11 @@ if(!isset($options['nosnapshots']))
 	}
 	else
 		echo "Could not create snapshots\n";
+}
+if(!empty($tvdb_id))
+{
+	$tvdb_series=$tvdb->findseries($tvdb_id);
+	$episodedata=$tvdb_series;
 }
 
 if(isset($episodeinfo) || ($episodeinfo=$desc->serieinfo($release))!==false) //Check if the name contains season and episode number
@@ -76,7 +96,7 @@ elseif(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in 
 $banner='[b]'.$release.'[/b]'; //In case the series is not found or don't have a banner, use the relase name as banner	
 if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVDB, get information
 {
-	$episodelink=$tvdb->link($episodedata['Episode']);
+	$episodelink=$tvdb->link($episodedata);
 	if(!empty($episodedata['Series']['banner']))
 	{
 		$bannerimage_tvdb="http://thetvdb.com/banners/".$episodedata['Series']['banner'];
