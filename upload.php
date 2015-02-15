@@ -38,7 +38,7 @@ if (!file_exists($torrentfile))
 		die("Torrent creation failed\n$cmd\n");
 }
 else
-	echo "Torrent is already created\n";
+	echo "Torrent $torrentfile is already created\n";
 if(!file_exists($basefile.'.txt'))
 	trigger_error("Could not find description file",E_USER_ERROR);
 else
