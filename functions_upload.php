@@ -34,6 +34,18 @@ class upload
 		curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/hei.php");	
 		return curl_exec($this->ch);
 	}
+	function buildtorrent($path,$torrentfile)
+	{
+		if (!file_exists($torrentfile))
+		{
+			echo "Creating torrent\n";
+			echo shell_exec($cmd="buildtorrent -p1 -L 41941304 -a http://jalla.com \"$path\" \"$torrentfile\" 2>&1");
+			if (!file_exists($torrentfile))
+				die("Torrent creation failed\n$cmd\n");
+		}
+		else
+			echo "Torrent is already created\n";
+	}
 	function ftp_upload_torrent($torrentfile)
 	{
 		$conn_id=ftp_connect($this->ftp['host']) or die("Couldn't connect to ftp");
@@ -50,12 +62,16 @@ class upload
 		$filename=preg_replace('/[^\x20-\x7E]/','', $filename); //Remove other non printable characters
 		return $filename;
 	}
-	function buildupload($template,$torrentfile,$title,$description,$mediainfo)
+	function buildupload($template,$torrentfile,$title,$description,$mediainfo='')
 	{
 		if(file_exists($templatefile=$this->scriptdir.'templates/'.$template.'.json'))
 			$template_topic=json_decode(file_get_contents($templatefile),true);
+		else
+			trigger_error($templatefile." not found",E_USER_ERROR);
 		if(file_exists($templatefile=$this->scriptdir.'templates/site_'.$this->site['name'].'.json'))
 			$template_site=json_decode(file_get_contents($templatefile),true);
+		else
+			trigger_error($templatefile." not found",E_USER_ERROR);
 		$postdata=array_merge($template_site,$template_topic);
 		$postdata=str_replace(array('--title--','--description--','--mediainfo--'),array($title,$description,$mediainfo),$postdata);
 		$key=array_search('--torrentfile--',$postdata);
@@ -88,7 +104,7 @@ class upload
 			return false;
 		}
 	}
-	function upload($template,$torrentfile,$title,$description,$mediainfo)
+	public function upload($template,$torrentfile,$title,$description,$mediainfo)
 	{
 		return $this->sendupload($this->buildupload($template,$torrentfile,$title,$description,$mediainfo));
 	}
