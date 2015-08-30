@@ -97,9 +97,9 @@ $banner='[b]'.$release.'[/b]'; //In case the series is not found or don't have a
 if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVDB, get information
 {
 	$episodelink=$tvdb->link($episodedata);
-	if(!empty($episodedata['Series']['banner']))
+	$bannerimage_tvdb=$tvdb->banner($episodedata);
+	if($bannerimage_tvdb!==false)
 	{
-		$bannerimage_tvdb="http://thetvdb.com/banners/".$episodedata['Series']['banner'];
 		$upload_banner=$imagehost->upload($bannerimage_tvdb); //Upload the banner
 		$banner='[url='.$episodelink.'][img]'.$upload_banner['image'].'[/img][/url]';
 	}
