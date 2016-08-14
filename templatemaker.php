@@ -31,7 +31,7 @@ elseif(strpos($_SERVER['HTTP_REFERER'],'github.quad.local')===false)
         <input type="text" name="templatename">
 		<input type="submit" value="Submit">
         </form>
-            <p>Pplaceholders for templates:</p>
+            <p>Placeholders for templates:</p>
     <p>--title--</p>
     <p>--description--</p>
     <p>--torrentfile--</p>
