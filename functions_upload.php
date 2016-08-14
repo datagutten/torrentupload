@@ -58,7 +58,7 @@ class upload
 	}
 	function cleanfilename($filename) //Remove special charaters from a filename
 	{
-		$filename=str_replace(array('æ','ø','å','Æ','Ø','Å'),array('e','o','a','E','O','A'),$filename);
+		$filename=str_replace(array('æ','ø','å','Æ','Ø','Å','ä','ö','Ä','Ö','#'),array('e','o','a','E','O','A','a','o','A','O',''),$filename);
 		$filename=preg_replace('/[^\x20-\x7E]/','', $filename); //Remove other non printable characters
 		return $filename;
 	}
