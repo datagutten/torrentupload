@@ -62,7 +62,7 @@ $postdata=$upload->buildupload($argv[2],$torrentfile,$release,$description,$medi
 $upload_return=$upload->sendupload($postdata);
 //print_r(array_keys($postdata));
 //echo $upload_return."\n";
-echo $upload->uploadhandler($upload_return,$release);
+$torrentfile=$upload->uploadhandler($upload_return,$release);
 
 
 //$upload_return=upload($release,file_get_contents($release.'.nfo'),"$torrent_file_dir/$release.torrent");

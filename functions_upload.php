@@ -132,6 +132,7 @@ class upload
 				echo "Laster opp torrent til seedbox\n";
 				$this->ftp_upload_torrent($torrentfile);
 			}
+			return $torrentfile;
 		}
 		file_put_contents($this->scriptdir."uploads/upload_$release.txt",$upload);
 	}
