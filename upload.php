@@ -1,9 +1,8 @@
 <?Php
 chdir(dirname(realpath(__FILE__))); //Change to the script folder
 require_once 'config.php';
-require 'torrent-rw/Torrent.php';
 
-require 'tools/dependcheck.php';
+require_once 'tools/dependcheck.php';
 $depend=new dependcheck;
 if($depend->depend('buildtorrent')!==true)
 	die("Buildtorrent is required to make torrents");
