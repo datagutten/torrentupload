@@ -115,9 +115,15 @@ class upload
 	{
 		//Håndter feilet opplasting
 		if(preg_match('^Mislykket opplasting.*\<div class="contentbox"\>(.*)\</div\>^sU',$upload,$result) || preg_match('^Feilmelding:\</b\>(.+)\</p\>^',$upload,$result))
-			die('Error: '.utf8_encode(trim($result[1]))."\n");
+		{	
+			$this->error='Error: '.utf8_encode(trim($result[1]));
+			return false;
+		}
 		elseif(strpos($upload,'En torrent med lignende innhold')!==false)
-			die("Allerede lastet opp\n");
+		{
+			$this->error='Allerede lastet opp';
+			return false;
+		}
 		else
 		{
 			preg_match('^(download\.php\?id=[0-9]+)\"^',$upload,$file); //Finn torrentfilnavnet
