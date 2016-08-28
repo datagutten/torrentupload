@@ -7,6 +7,7 @@ class upload
 	public $torrent_auto_dir;
 	public $site;
 	public $scriptdir;
+	public $error;
 	function __construct()
 	{
 		$this->ch=curl_init();
