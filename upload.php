@@ -63,7 +63,8 @@ $upload_return=$upload->sendupload($postdata);
 //print_r(array_keys($postdata));
 //echo $upload_return."\n";
 $torrentfile=$upload->uploadhandler($upload_return,$release);
-
+if($torrentfile===false)
+	echo $upload->error."\n";
 
 //$upload_return=upload($release,file_get_contents($release.'.nfo'),"$torrent_file_dir/$release.torrent");
 //$upload->uploadhandler($upload_return,$release);
