@@ -35,14 +35,22 @@ class upload
 		curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/hei.php");	
 		return curl_exec($this->ch);
 	}
-	function buildtorrent($path,$torrentfile)
+	//Create torrent file, piece length is specified in megabytes
+	function buildtorrent($path,$torrentfile,$tracker='http://localhost',$piecelength=4)
 	{
 		if (!file_exists($torrentfile))
 		{
 			echo "Creating torrent\n";
-			echo shell_exec($cmd="buildtorrent -p1 -L 41941304 -a http://jalla.com \"$path\" \"$torrentfile\" 2>&1");
+
+			$piecelength=$piecelength*pow(1024,2); //Convert piece length to bytes
+			$cmd=sprintf('buildtorrent -p1 -l %d -a %s "%s" "%s" 2>&1',$piecelength,$tracker,$path,$torrentfile);
+			echo shell_exec($cmd);
+
 			if (!file_exists($torrentfile))
-				die("Torrent creation failed\n$cmd\n");
+			{
+				$this->error="Torrent creation failed\n$cmd\n";
+				return false;
+			}
 		}
 		else
 			echo "Torrent is already created\n";

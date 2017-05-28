@@ -31,10 +31,8 @@ $torrentfile=$pathinfo['dirname'].'/'.$upload->cleanfilename($pathinfo['filename
 var_dump($torrentfile);
 if (!file_exists($torrentfile))
 {
-	echo "Creating torrent\n";
-	echo shell_exec($cmd="buildtorrent -p1 -L 41941304 -a http://jalla.com \"$path\" \"$torrentfile\" 2>&1");
-	if (!file_exists($torrentfile))
-		die("Torrent creation failed\n$cmd\n");
+	if($upload->buildtorrent($path,$torrentfile)===false)
+		die($upload->error);
 }
 else
 	echo "Torrent $torrentfile is already created\n";
