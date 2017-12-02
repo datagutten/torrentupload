@@ -23,12 +23,18 @@ if(!file_exists($path))
 $pathinfo=pathinfo($path);
 
 $release=$pathinfo['filename'];
-$basefile=$pathinfo['dirname'].'/'.$pathinfo['filename'];
+
 //$torrent->save($release.'.torrent');
+if(!is_dir($path))
+	$filename=$pathinfo['filename'];
+else
+	$filename=basename($path);
+$basefile=$pathinfo['dirname'].'/'.$filename;
 
 $upload->login();
-$torrentfile=$pathinfo['dirname'].'/'.$upload->cleanfilename($pathinfo['filename']).'.torrent';
+$torrentfile=$pathinfo['dirname'].'/'.$upload->cleanfilename($filename).'.torrent';
 var_dump($torrentfile);
+
 if (!file_exists($torrentfile))
 {
 	if($upload->buildtorrent($path,$torrentfile)===false)
