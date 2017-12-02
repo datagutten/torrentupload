@@ -78,7 +78,7 @@ if(isset($episodeinfo) || ($episodeinfo=$desc->serieinfo($release))!==false) //C
 {
 	if(isset($tvdb_id))
 		$episodeinfo[1]=$tvdb_id;
-	$episodedata=$tvdb->finnepisode($episodeinfo[1],$episodeinfo[2],$episodeinfo[3]); //Get information from TheTVDB
+	$episodedata=$tvdb->episode_info($episodeinfo[1],$episodeinfo[2],$episodeinfo[3]); //Get information from TheTVDB
 }
 elseif(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in the style [series] - [episode name]
 {
@@ -89,7 +89,7 @@ elseif(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in 
 	{
 		if(isset($argv[2]))
 			$result[2]=$argv[2]; //Get the series name from the command line
-		$episodedata=$tvdb->finnepisodenavn($result[2],$serie);
+		$episodedata=$tvdb->find_episode_by_name($result[2],$serie);
 	}
 }
 

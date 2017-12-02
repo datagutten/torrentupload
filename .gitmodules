@@ -7,3 +7,6 @@
 [submodule "tvdb"]
 	path = tvdb
 	url = git@github.com:datagutten/tvdb.git
+[submodule "imagehost"]
+	path = imagehost
+	url = https://github.com/datagutten/imagehost.git
