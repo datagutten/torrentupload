@@ -2,10 +2,10 @@
 require_once 'tvdb/tvdb.php';
 require_once 'functions_description.php';
 require_once 'config.php';
-require 'someimage/someimage.php';
-$imagehost=new someimage;
+
 $tvdb=new tvdb($tvdb_key);
 $desc=new description;
+$imagehost=$desc->imagehost;
 
 if(isset($_SERVER['HTTP_USER_AGENT'])) //Check if the script is running in a browser
 {
@@ -100,14 +100,16 @@ if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVD
 	$bannerimage_tvdb=$tvdb->banner($episodedata);
 	if($bannerimage_tvdb!==false)
 	{
-		$upload_banner=$imagehost->upload($bannerimage_tvdb); //Upload the banner
-		$banner='[url='.$episodelink.'][img]'.$upload_banner['image'].'[/img][/url]';
+		$bannerimage_tempfile=sys_get_temp_dir().'/'.basename($bannerimage_tvdb);
+		copy($bannerimage_tvdb,$bannerimage_tempfile);
+		$upload_banner=$imagehost->upload($bannerimage_tempfile); //Upload the banner
+		$banner='[url='.$episodelink.'][img]'.$upload_banner.'[/img][/url]';
 	}
 	if(!empty($episodedata['Episode']['EpisodeName'])) //Check if the episode got a name
 		$description.="[b]{$episodedata['Episode']['EpisodeName']}[/b]\n";
 
-	if(!empty($episodedata['Episode']['Overview'])) //If the episode don't got an overview it will be an empty array
-		$description.=$episodedata['Episode']['Overview'];
+	if(!empty($episodedata['overview'])) //If the episode don't got an overview it will be an empty array
+		$description.=$episodedata['overview'];
 	elseif(!empty($episodedata['Series']['Overview'])) //Use overview for the series
 		$description.=$episodedata['Series']['Overview'];
 
@@ -124,7 +126,7 @@ else
 	$mediainfo='';
 
 if(isset($snapshotlinks))
-	$description=$desc->description($snapshotlinks,$banner."\n".$description."\n");
+	$description=$banner."\n".$description."\n".$desc->snapshots_bbcode($snapshotlinks);
 else
 	$description=$banner."\n".$description."\n";
 

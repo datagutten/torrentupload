@@ -3,13 +3,17 @@ class description
 {
 	private $dependcheck;
 	private $video;
+	public $imagehost;
+	public $error;
 	function __construct()
 	{
+		require 'config.php';
 		require_once 'tools/dependcheck.php';
 		$this->dependcheck=new dependcheck;
 		require_once 'tools/video.php';
 		$this->video=new video;
-
+		require 'imagehost/loader.php';
+		$this->imagehost=new $config['image_host'];
 	}
 	public function serieinfo($release) //Henter serie og episodeinfo fra releasenavn
 	{
@@ -23,12 +27,48 @@ class description
 			$serieinfo=false;
 		return $serieinfo; //1=serienavn, 2=sesong
 	}
-	public function snapshots($file)
+
+	//Create snapshots from video file
+	public function snapshots($file,$snapshotdir=false)
 	{
-		$positions=$this->video->snapshotsteps($file,4);
-		if(!file_exists($snapshotdir=dirname($file).'/snapshots'))
+		$positions=$this->video->snapshotsteps($file,4); //Calcuate snapshot positions
+		if(empty($snapshotdir)) //Create snapshot directory in video folder if other folder is not specified
+			$snapshotdir=dirname($file).'/snapshots';
+		if(!file_exists($snapshotdir))
 			mkdir($snapshotdir,0777,true);
 		return $this->video->snapshots($file,$positions,$snapshotdir);
+	}
+
+	//Upload snapshots using imagehost class
+	function upload_snapshots($snapshots)
+	{
+		if(empty($snapshots))
+			return false;
+		if(empty($this->imagehost))
+			return false;
+		foreach ($snapshots as $key=>$snapshot)
+		{
+			$upload=$this->imagehost->upload($snapshot);
+			if($upload===false)
+			{
+				$this->error=$this->imagehost->error;
+				return false;
+			}
+			$snapshotlinks[$key]=$upload;
+		}
+		return $snapshotlinks;
+	}
+	function snapshots_bbcode($snapshotlinks)
+	{
+		$bbcode='';
+		foreach ($snapshotlinks as $screenshot) //Lag screenshots
+		{
+			if(method_exists($this->imagehost,'bbcode'))
+				$bbcode.=$this->imagehost->bbcode($screenshot);
+			else
+				$bbcode.=sprintf('[img]%s[/img]',$screenshot);
+		}
+		return $bbcode;
 	}
 
 	public function mediainfo($path)
@@ -79,14 +119,5 @@ class description
 		$info=preg_replace("/Complete name.+\n/",'',$info);
 		$info=preg_replace("/Unique ID.+\n/",'',$info);
 		return $info;
-	}
-	public function description($screenshots,$description)
-	{
-		$screens=''; //Lag variabelen screens for å unngå warning
-		foreach ($screenshots as $key=>$screenshot) //Lag screenshots
-		{
-			$screens .= "[url={$screenshot['image']}][img]{$screenshot['thumbnail']}[/img][/url]";
-		}
-		return $description."\n".$screens; //Sett sammen banner, beskrivelse og screenshots
 	}
 }
