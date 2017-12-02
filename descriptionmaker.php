@@ -77,34 +77,62 @@ if(!empty($tvdb_id))
 if(isset($episodeinfo) || ($episodeinfo=$desc->serieinfo($release))!==false) //Check if the name contains season and episode number
 {
 	if(isset($tvdb_id))
-		$episodeinfo[1]=$tvdb_id;
-	$episodedata=$tvdb->episode_info($episodeinfo[1],$episodeinfo[2],$episodeinfo[3]); //Get information from TheTVDB
+		$series_id=$tvdb_id;
+	else
+	{
+		$series=$tvdb->series_search($episodeinfo[1]);
+		if($series===false)
+			echo $tvdb->error."\n";
+		else
+		{
+			$series_id=$series['id'];
+			$tvdb->lang=$tvdb->last_search_language; //Use search result language as working language for TVDB
+		}
+	}
+
+	if(!empty($series_id))
+		$episodedata=$tvdb->episode_info($series_id,$episodeinfo[2],$episodeinfo[3]); //Get information from TheTVDB
 }
-elseif(preg_match('^(.+?) - (.+)^',$release,$result)) //Check if the name is in the style [series] - [episode name]
+elseif(preg_match('^(.+?) - (.+)^',$release,$episodeinfo)) //Check if the name is in the style [series] - [episode name]
 {
 	if(isset($tvdb_id))
-		$result[1]=$tvdb_id;
-	$serie=$tvdb->findseries($result[1]);
-	if($serie!==false)
+		$series=$tvdb_id;
+	else
 	{
-		if(isset($argv[2]))
-			$result[2]=$argv[2]; //Get the series name from the command line
-		$episodedata=$tvdb->find_episode_by_name($result[2],$serie);
+		$series=$tvdb->series_search($episodeinfo[1]);
+		if($series===false)
+			echo 'Search failed: '.$tvdb->error."\n";
+		else
+			$tvdb->lang=$tvdb->last_search_language; //Use search result language as working language for TVDB
+	}
+	if(!empty($series))
+	{
+		$episodedata=$tvdb->find_episode_by_name($series,$episodeinfo[2]);
+		if($episodedata===false)
+			echo 'Unable to find episode: '.$tvdb->error."\n";
 	}
 }
 
 $banner='[b]'.$release.'[/b]'; //In case the series is not found or don't have a banner, use the relase name as banner	
 if(isset($episodedata) && $episodedata!==false) //The episode is found on TheTVDB, get information
 {
-	$episodelink=$tvdb->link($episodedata);
-	$bannerimage_tvdb=$tvdb->banner($episodedata);
-	if($bannerimage_tvdb!==false)
+	$episodelink=$tvdb->episode_link($episodedata);
+	if(isset($series))
+		$bannerimage_tvdb=$tvdb->banner($series);
+	elseif(isset($episodeinfo['banner']))
+		$bannerimage_tvdb=$episodeinfo['banner'];
+	
+	if(!empty($bannerimage_tvdb)) //Fetch graphical banner from TVDB
 	{
+		//Copy banner image to temporary directory before uploading to image host
 		$bannerimage_tempfile=sys_get_temp_dir().'/'.basename($bannerimage_tvdb);
 		copy($bannerimage_tvdb,$bannerimage_tempfile);
 		$upload_banner=$imagehost->upload($bannerimage_tempfile); //Upload the banner
 		$banner='[url='.$episodelink.'][img]'.$upload_banner.'[/img][/url]';
 	}
+	else //Create linked text banner
+		$banner=sprintf('[url=%s][b]%s[/b][/url]',$episodelink,$release);
+	
 	if(!empty($episodedata['Episode']['EpisodeName'])) //Check if the episode got a name
 		$description.="[b]{$episodedata['Episode']['EpisodeName']}[/b]\n";
 
