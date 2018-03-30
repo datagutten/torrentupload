@@ -35,7 +35,14 @@ class upload
 		curl_setopt($this->ch,CURLOPT_REFERER,$this->site['url']."/hei.php");	
 		return curl_exec($this->ch);
 	}
-	//Create torrent file, piece length is specified in megabytes
+
+	/*Create torrent file, piece length is specified in megabytes
+	Information from http://torrentinvites.org/f29/piece-size-guide-167985/ :
+	so lets assume we leave 100kb of space for the list of files and whatnot in .torrent. the piece hashes is a list of 20-byte SHA-1 hashes for each peace, so thats about 46000 pieces we can store in torrent. doing the division to keep the .torrent under 1 MB:
+	1 mb piece size = max of about 45 GB torrent
+	4 mb piece size = max of 180 GBs
+	8 mb piece size = max of 360 GBs
+	*/	
 	function buildtorrent($path,$torrentfile,$tracker='http://localhost',$piecelength=4)
 	{
 		if (!file_exists($torrentfile))
