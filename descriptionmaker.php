@@ -18,7 +18,7 @@ if(isset($_SERVER['HTTP_USER_AGENT'])) //Check if the script is running in a bro
 else
 {
 	$mode='console';
-	$options = getopt("",array('tvdb:','nomediainfo','nosnapshots'));
+	$options = getopt("",array('tvdb:','nomediainfo','nosnapshots','outdir:'));
 	if(!isset($argv[1]))
 		die('Filen det skal lages beskrivelse for må spesifiseres på kommandolinjen (php descriptionmaker.php dinfil.mkv');
 	else
@@ -43,7 +43,7 @@ if(is_dir($file))
 	{
 		$finfo = new finfo(FILEINFO_MIME);
 		$mime=$finfo->file($file.'/'.$subfile);
-		if(substr($mime,0,5)=='video') //Find first video file
+		if(substr($mime,0,5)=='video' || substr($subfile,-2,2)=='ts') //Find first video file
 		{
 			$file=$file.'/'.$subfile;
 			break;
@@ -158,8 +158,16 @@ if(isset($snapshotlinks))
 else
 	$description=$banner."\n".$description."\n";
 
-file_put_contents($info['dirname'].'/'.$info['filename'].'.txt',$description); //Write the complete description to a file
-file_put_contents($info['dirname'].'/'.$info['filename'].'.mediainfo',$desc->simplemediainfo($file)); //Write mediainfo to a file
+if(empty($options['outdir']))
+{
+	file_put_contents($info['dirname'].'/'.$info['filename'].'.txt',$description); //Write the complete description to a file
+	file_put_contents($info['dirname'].'/'.$info['filename'].'.mediainfo',$desc->simplemediainfo($file)); //Write mediainfo to a file
+}
+else
+{
+	file_put_contents($options['outdir'].'/'.$info['filename'].'.txt',$description); //Write the complete description to a file
+	file_put_contents($options['outdir'].'/'.$info['filename'].'.mediainfo',$desc->simplemediainfo($file)); //Write mediainfo to a file
+}
 
 if($mode=='browser') //Display the description in a browser
 {
